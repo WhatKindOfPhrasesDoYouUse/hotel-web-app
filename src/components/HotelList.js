@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom'; // Исправлено на правильный импорт
 
 const HotelList = () => {
     const [hotels, setHotels] = useState(null); // Состояние для хранения информации о гостинице
@@ -11,7 +12,7 @@ const HotelList = () => {
     }, [])
 
     if (!hotels) {
-        return <div>Загрузка данных</div>
+        return <div>Загрузка отелей</div>
     }
 
     // вывожу коллекцию json объектов
@@ -27,6 +28,9 @@ const HotelList = () => {
                     <p>Почта: {hotel.email}</p>
                     <p>Рейтинг: {hotel.rating}</p>
                     <p>Описание: {hotel.description}</p>
+                    <Link to={`/hotel/${hotel.id}/reviews`}> {/* Исправленный путь */}
+                        <button>Посмотреть отзывы</button>
+                    </Link>
                     <hr/>
                 </div>
             ))}
