@@ -1,21 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'; // Исправлено на правильный импорт
+import { Link } from 'react-router-dom'; // Исправленный импорт
 
 const HotelList = () => {
-    const [hotels, setHotels] = useState(null); // Состояние для хранения информации о гостинице
+    const [hotels, setHotels] = useState([]); // Состояние для хранения информации о гостинице
+    const [roomCount, setRoomCount] = useState({}); // Хранение количества комнат для каждого отеля
 
+    // Получение списка отелей
     useEffect(() => {
         fetch('http://localhost:5246/api/Hotel/GetHotels') // URL GET метода API
-            .then(res => res.json()) // преобразую ответ в JSON (хотя зачем если он уже в JSON приходит)
-            .then(data => setHotels(data)) // устанавливаю полученные данные в состояние на момент выполнения
+            .then(res => res.json()) // преобразую ответ в JSON
+            .then(data => setHotels(data)) // устанавливаю полученные данные в состояние
             .catch(err => console.log(err)); // ловлю ошибку, если запрос не удался
-    }, [])
+    }, []);
 
-    if (!hotels) {
-        return <div>Загрузка отелей</div>
+    // Получение количества доступных комнат для каждого отеля
+    useEffect(() => {
+        if (hotels.length > 0) {
+            const fetchRoomCounts = async () => {
+                const counts = {};
+                for (const hotel of hotels) {
+                    const response = await fetch(`http://localhost:5246/api/Room/GetAvailableRoomsCount/${hotel.id}`);
+                    const count = await response.json();
+                    counts[hotel.id] = count; // Сохраняем количество комнат по каждому отелю
+                }
+                setRoomCount(counts); // Обновляем состояние с количеством комнат
+            };
+
+            fetchRoomCounts();
+        }
+    }, [hotels]); // Запрос количества комнат после получения списка отелей
+
+    if (hotels.length === 0) {
+        return <div>Загрузка отелей...</div>;
     }
 
-    // вывожу коллекцию json объектов
     return (
         <div>
             <h1>Список отелей</h1>
@@ -28,10 +46,14 @@ const HotelList = () => {
                     <p>Почта: {hotel.email}</p>
                     <p>Рейтинг: {hotel.rating}</p>
                     <p>Описание: {hotel.description}</p>
-                    <Link to={`/hotel/${hotel.id}/reviews`}> {/* Исправленный путь */}
+                    <p>Доступные комнаты: {roomCount[hotel.id]}</p> {/* Показываем количество доступных комнат */}
+                    <Link to={`/hotel/${hotel.id}/reviews`}>
                         <button>Посмотреть отзывы</button>
                     </Link>
-                    <hr/>
+                    <Link to={`/hotel/${hotel.id}/rooms`}>
+                        <button>Посмотреть доступные комнаты</button>
+                    </Link>
+                    <hr />
                 </div>
             ))}
         </div>

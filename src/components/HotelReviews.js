@@ -15,7 +15,6 @@ const HotelReviews = () => {
 
     if (!Array.isArray(reviews)) {
         return <div>Ошибка при загрузке отзывов</div>;
-        
     }
 
     if (!reviews) {
