@@ -8,6 +8,7 @@ const HotelList = () => {
     const [ratingFilter, setRatingFilter] = useState(''); // Фильтр по рейтингу
     const [minAvailableRoomsFilter, setMinAvailableRoomsFilter] = useState(''); // Фильтр по минимальному количеству комнат
     const [isLoading, setIsLoading] = useState(false); // Состояние для загрузки
+    const [sortByRatingDescending, setSortByRatingDescending] = useState(null); // Состояние для сортировки
 
     // Обработчик изменения фильтра по городу
     const handleCityFilterChange = (e) => {
@@ -55,6 +56,23 @@ const HotelList = () => {
 
         // Возвращаем все отели при сбросе фильтров
         fetch('http://localhost:5246/api/Hotel/GetHotels')
+            .then(res => res.json())
+            .then(data => {
+                setHotels(data);
+                setIsLoading(false); // Отключаем загрузку
+            })
+            .catch(err => {
+                console.log('Ошибка при получении данных: ', err);
+                setIsLoading(false); // Отключаем загрузку в случае ошибки
+            });
+    };
+
+    // Функция для сортировки отелей
+    const handleSortByRating = (descending) => {
+        setIsLoading(true);
+        const url = `http://localhost:5246/api/Hotel/SortedHotelsByRating?sortByRatingDescending=${descending}`;
+
+        fetch(url)
             .then(res => res.json())
             .then(data => {
                 setHotels(data);
@@ -131,6 +149,12 @@ const HotelList = () => {
 
             {/* Кнопка для сброса фильтров */}
             <button onClick={handleResetFilters}>Сбросить фильтры</button>
+
+            {/* Кнопка для сортировки по рейтингу */}
+            <div>
+                <button onClick={() => handleSortByRating(true)}>Сортировать по рейтингу (убывание)</button>
+                <button onClick={() => handleSortByRating(false)}>Сортировать по рейтингу (возрастание)</button>
+            </div>
 
             {/* Отображение состояния загрузки */}
             {isLoading ? (
