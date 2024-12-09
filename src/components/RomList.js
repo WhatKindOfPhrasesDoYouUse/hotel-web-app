@@ -25,6 +25,23 @@ const RoomList = () => {
             });
     }, [id]);
 
+    // Обработчик сортировки комнат по цене
+    const handleSortByPrice = (descending) => {
+        setIsLoading(true);
+        const url = `http://localhost:5246/api/Room/SortedHotelsByPrice?hotelId=${id}&sortByPriceDescending=${descending}`;
+
+        fetch(url)
+            .then((res) => res.json())
+            .then((data) => {
+                setRooms(data);
+                setIsLoading(false); // Отключаем загрузку
+            })
+            .catch((err) => {
+                console.log('Ошибка при получении данных: ', err);
+                setIsLoading(false); // Отключаем загрузку в случае ошибки
+            });
+    };
+
     // Обработчик отправки фильтров
     const handleFilterSubmit = () => {
         setIsLoading(true);
@@ -107,6 +124,12 @@ const RoomList = () => {
                 />
                 <button onClick={handleFilterSubmit}>Применить фильтр</button>
                 <button onClick={handleResetFilters}>Сбросить фильтры</button>
+            </div>
+
+            {/* Кнопки сортировки */}
+            <div className="sort-buttons">
+                <button onClick={() => handleSortByPrice(false)}>Сортировать по цене (возрастание)</button>
+                <button onClick={() => handleSortByPrice(true)}>Сортировать по цене (убывание)</button>
             </div>
 
             {/* Отображение списка комнат */}
