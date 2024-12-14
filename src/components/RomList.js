@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 
 const RoomList = () => {
     const { id } = useParams(); // Получаем ID отеля из URL
@@ -9,9 +11,18 @@ const RoomList = () => {
     const [minPriceFilter, setMinPriceFilter] = useState(''); // Фильтр по минимальной цене
     const [maxPriceFilter, setMaxPriceFilter] = useState(''); // Фильтр по максимальной цене
     const [roomTypeFilter, setRoomTypeFilter] = useState(''); // Фильтр по типу комнаты
+    const [userRole, setUserRole] = useState(null); // Роль пользователя для проверки доступа
 
-    // Загрузка всех доступных комнат при первой загрузке страницы
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            // Декодируем токен для получения роли пользователя
+            const decodedToken = jwtDecode(token);
+            const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+            console.log(role)
+            setUserRole(role); // Сохраняем роль пользователя
+        }
+
         setIsLoading(true);
         fetch(`http://localhost:5246/api/Room/GetAvailableRooms/${id}`)
             .then((res) => res.json())
@@ -24,6 +35,31 @@ const RoomList = () => {
                 setIsLoading(false);
             });
     }, [id]);
+
+    // Функция для удаления комнаты
+    const deleteRoom = async (roomId) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Вы не авторизованы.');
+            return;
+        }
+
+        console.log(roomId);
+
+        if (window.confirm("Вы уверены, что хотите удалить эту комнату?")) {
+            try {
+                await axios.delete(`http://localhost:5246/api/Room/DeleteRoomById/${roomId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setRooms(rooms.filter(room => room.id !== roomId));
+            } catch (error) {
+                console.error("Ошибка при удалении комнаты", error);
+                alert("Ошибка при удалении комнаты.");
+            }
+        }
+    };
 
     // Обработчик сортировки комнат по цене
     const handleSortByPrice = (descending) => {
@@ -141,6 +177,10 @@ const RoomList = () => {
                         <p>Номер комнаты: {room.roomNumber}</p>
                         <p>Вместимость: {room.capacity} человек</p>
                         <p>Цена: {room.price} руб.</p>
+                        {/* Кнопка удаления доступна только для админов */}
+                        {userRole === 'admins' && (
+                            <button onClick={() => deleteRoom(room.id)}>Удалить</button>
+                        )}
                     </div>
                 ))}
             </div>
