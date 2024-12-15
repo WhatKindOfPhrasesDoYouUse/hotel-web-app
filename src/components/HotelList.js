@@ -9,6 +9,7 @@ const HotelList = () => {
     const [minAvailableRoomsFilter, setMinAvailableRoomsFilter] = useState(''); // Фильтр по минимальному количеству комнат
     const [isLoading, setIsLoading] = useState(false); // Состояние для загрузки
     const [sortByRatingDescending, setSortByRatingDescending] = useState(null); // Состояние для сортировки
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     // Обработчик изменения фильтра по городу
     const handleCityFilterChange = (e) => {
@@ -24,6 +25,15 @@ const HotelList = () => {
     const handleMinAvailableRoomsChange = (e) => {
         setMinAvailableRoomsFilter(e.target.value);
     };
+
+    useEffect(() => {
+        // Проверка наличия токена для аутентификации
+        const token = localStorage.getItem('token'); // Предположим, что токен хранится в localStorage
+        if (token) {
+            setIsAuthenticated(true); // Если токен найден, считаем, что пользователь авторизован
+        }
+    }, []);
+
 
     // Функция для применения фильтров
     const handleFilterSubmit = () => {
@@ -143,6 +153,19 @@ const HotelList = () => {
                     onChange={handleMinAvailableRoomsChange}
                 />
             </div>
+
+            {isAuthenticated && (
+                <Link to="/profile">
+                    <button>Перейти в личный кабинет</button>
+                </Link>
+            )}
+
+            {!isAuthenticated && (
+                <Link to="/login">
+                    <button>Авторизоваться</button>
+                </Link>
+            )}
+
 
             {/* Кнопка для применения фильтра */}
             <button onClick={handleFilterSubmit}>Применить фильтр</button>
