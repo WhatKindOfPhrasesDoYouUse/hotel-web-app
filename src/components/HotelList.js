@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 const HotelList = () => {
     const [hotels, setHotels] = useState([]); // Состояние для хранения информации о гостиницах
@@ -10,6 +11,7 @@ const HotelList = () => {
     const [isLoading, setIsLoading] = useState(false); // Состояние для загрузки
     const [sortByRatingDescending, setSortByRatingDescending] = useState(null); // Состояние для сортировки
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     // Обработчик изменения фильтра по городу
     const handleCityFilterChange = (e) => {
@@ -27,10 +29,20 @@ const HotelList = () => {
     };
 
     useEffect(() => {
-        // Проверка наличия токена для аутентификации
         const token = localStorage.getItem('token'); // Предположим, что токен хранится в localStorage
         if (token) {
             setIsAuthenticated(true); // Если токен найден, считаем, что пользователь авторизован
+
+            try {
+                const decodedToken = jwtDecode(token);
+                const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+                console.log(role)
+                if (role && role === 'admins') {
+                    setIsAdmin(true);
+                }
+            } catch (err) {
+                console.error('Ошибка при расшифровке токена: ', err);
+            }
         }
     }, []);
 
@@ -163,6 +175,12 @@ const HotelList = () => {
             {!isAuthenticated && (
                 <Link to="/login">
                     <button>Авторизоваться</button>
+                </Link>
+            )}
+
+            {isAdmin && (
+                <Link to="/add-hotel">
+                    <button>Добавить новый отель</button>
                 </Link>
             )}
 

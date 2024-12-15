@@ -4,6 +4,7 @@ import HotelReviews from './components/HotelReviews';
 import RoomList from './components/RomList';
 import Login from './components/Login';
 import UserProfile from './components/UserProfile';
+import AddHotel from './components/AddHotel';
 
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
@@ -17,6 +18,7 @@ const App = () => {
                 <Route path="/hotel/:id/rooms" element={<RoomList />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/profile" element={<UserProfile />} />
+                <Route path="/add-hotel" element={<AddHotel />} />
             </Routes>
         </Router>
     );
