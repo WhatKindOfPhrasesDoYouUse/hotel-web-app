@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
 const AddHotel = () => {
     const [formData, setFormData] = useState({
@@ -20,9 +21,19 @@ const AddHotel = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const token = localStorage.getItem('token'); // Получаем токен из localStorage
+
+        if (!token) {
+            alert('Токен не найден. Пожалуйста, авторизуйтесь.');
+            return;
+        }
+
         fetch('http://localhost:5246/api/Hotel/AddHotel', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Добавляем токен в заголовок
+            },
             body: JSON.stringify(formData)
         })
             .then((response) => {

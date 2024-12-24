@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import {Link, Route, useParams} from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const RoomList = () => {
     const { id } = useParams(); // Получаем ID отеля из URL
+    const navigate = useNavigate();
     const [rooms, setRooms] = useState([]); // Состояние для списка комнат
     const [isLoading, setIsLoading] = useState(false); // Состояние загрузки
     const [capacityFilter, setCapacityFilter] = useState(''); // Фильтр по вместимости
@@ -128,6 +130,11 @@ const RoomList = () => {
         return <div>Нет доступных комнат</div>;
     }
 
+    const handleAddRoom = () => {
+        //navigate(`/add-room`, { state: { id } });
+        navigate(`/add-room/${id}`);
+    };
+
     return (
         <div className="room-list">
             <h2>Доступные комнаты в отеле</h2>
@@ -168,6 +175,11 @@ const RoomList = () => {
                 <button onClick={() => handleSortByPrice(true)}>Сортировать по цене (убывание)</button>
             </div>
 
+            <div>
+                <button onClick={handleAddRoom}>Добавить комнату</button>
+            </div>
+
+
             {/* Отображение списка комнат */}
             <div className="rooms-container">
                 {rooms.map((room) => (
@@ -184,6 +196,7 @@ const RoomList = () => {
                     </div>
                 ))}
             </div>
+
         </div>
     );
 };

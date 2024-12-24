@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import axios from "axios";
 
 function Login() {
@@ -29,7 +29,6 @@ function Login() {
             console.log("Ошибка при логине:", error);
         }
     };
-
 
     return (
         <div>

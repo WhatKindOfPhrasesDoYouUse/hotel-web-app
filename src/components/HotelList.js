@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 
+// TODO: 1. Пофиксить ошибку с удалением отеля, удаление из бд работает, но в консоль кидает ошибку, после обновления страницы отель так же изчезает из фронтенда
+
 const HotelList = () => {
     const [hotels, setHotels] = useState([]); // Состояние для хранения информации о гостиницах
     const [roomCount, setRoomCount] = useState({}); // Хранение количества комнат для каждого отеля
@@ -69,6 +71,33 @@ const HotelList = () => {
             });
     };
 
+    // Функция для удаления отеля
+    const handleDeleteHotel = (hotelId) => {
+        setIsLoading(true);
+        const url = `http://localhost:5246/api/Hotel/DeleteHotelById/${hotelId}`;
+
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setHotels(hotels.filter(hotel => hotel.id !== hotelId));
+                } else {
+                    console.error('Ошибка при удалении отеля: ', data.message);
+                }
+                setIsLoading(false); // Отключаем загрузку
+            })
+            .catch(err => {
+                console.log('Ошибка при удалении отеля: ', err);
+                setIsLoading(false); // Отключаем загрузку в случае ошибки
+            });
+    };
+
     // Функция для сброса фильтров
     const handleResetFilters = () => {
         setCityFilter('');
@@ -105,6 +134,7 @@ const HotelList = () => {
                 setIsLoading(false); // Отключаем загрузку в случае ошибки
             });
     };
+
 
     // Получение списка отелей без фильтров (когда фильтры не применяются)
     useEffect(() => {
@@ -218,6 +248,9 @@ const HotelList = () => {
                             <Link to={`/hotel/${hotel.id}/rooms`}>
                                 <button>Посмотреть доступные комнаты</button>
                             </Link>
+                            {isAdmin && (
+                                <button onClick={() => handleDeleteHotel(hotel.id)}>Удалить отель</button>
+                            )}
                             <hr />
                         </div>
                     ))}

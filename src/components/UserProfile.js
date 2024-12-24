@@ -5,7 +5,9 @@ import { jwtDecode } from 'jwt-decode';
 const UserProfile = () => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [isEditing, setIsEditing] = useState(false); // Состояние для редактирования
+    const [isEditing, setIsEditing] = useState(false);
+    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+    const [reviews, setReviews] = useState([]);
     const [userData, setUserData] = useState({
         id: '',
         firstName: '',
@@ -15,7 +17,7 @@ const UserProfile = () => {
         phoneNumber: '',
         passport: '',
         password: ''
-    }); // Данные для редактирования
+    });
 
     // Получение токена из localStorage
     const getToken = () => {
@@ -24,6 +26,7 @@ const UserProfile = () => {
 
     const logout = () => {
         localStorage.removeItem('token');
+        window.location.href = 'http://localhost:3000/';
     };
 
     // Получение данных пользователя
@@ -106,6 +109,29 @@ const UserProfile = () => {
             setIsLoading(false);
         }
     };
+
+    const fetchReviews = async (userId) => {
+        setIsLoadingReviews(true);
+        try {
+            const response = await fetch(`http://localhost:5246/api/HotelReview/GetHotelReviewByUserId/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Ошибка при загрузке отзывов");
+            }
+
+            const data = await response.json();
+            setReviews(data);
+        } catch (error) {
+            console.error("Ошибка при загрузке отзывов: ", error);
+        } finally {
+            setIsLoadingReviews(false);
+        }
+    }
 
     if (isLoading) {
         return <div>Загрузка...</div>;
@@ -205,6 +231,9 @@ const UserProfile = () => {
                     <h2>Действия</h2>
                     <button onClick={() => setIsEditing(true)}>Редактировать</button>
                     <button onClick={logout}>Выйти</button>
+
+
+
                 </div>
             )}
         </div>
