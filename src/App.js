@@ -6,6 +6,7 @@ import Login from './components/Login';
 import UserProfile from './components/UserProfile';
 import AddHotel from './components/AddHotel';
 import AddRoom from './components/AddRoom';
+import BookingRoom from './components/BookingRoom';
 
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
@@ -21,6 +22,7 @@ const App = () => {
                 <Route path="/profile" element={<UserProfile />} />
                 <Route path="/add-hotel" element={<AddHotel />} />
                 <Route path="/add-room:id" element={<AddRoom />} />
+                <Route path="/booking-room/:roomId" element={<BookingRoom />} />
             </Routes>
         </Router>
     );

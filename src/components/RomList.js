@@ -122,6 +122,13 @@ const RoomList = () => {
             });
     };
 
+    const handleBookingRoom = (roomId) => {
+        const token = localStorage.getItem('token');
+        if (token != null) {
+            navigate(`/booking-room/${roomId}`);
+        }
+    }
+
     if (isLoading) {
         return <div>Загрузка...</div>;
     }
@@ -193,6 +200,7 @@ const RoomList = () => {
                         {userRole === 'admins' && (
                             <button onClick={() => deleteRoom(room.id)}>Удалить</button>
                         )}
+                        <button onClick={() => handleBookingRoom(room.id)}>Забронировать</button>
                     </div>
                 ))}
             </div>

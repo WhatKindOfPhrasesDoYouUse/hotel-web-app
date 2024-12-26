@@ -18,6 +18,8 @@ const UserProfile = () => {
         passport: '',
         password: ''
     });
+    const [bookingData, setBookingData] = useState([]);
+    const [hotels, setHotels] = useState([]);
 
     // Получение токена из localStorage
     const getToken = () => {
@@ -27,6 +29,13 @@ const UserProfile = () => {
     const logout = () => {
         localStorage.removeItem('token');
         window.location.href = 'http://localhost:3000/';
+    };
+
+    const handleChange = (e) => {
+        setUserData({
+            ...userData,
+            [e.target.name]: e.target.value
+        });
     };
 
     // Получение данных пользователя
@@ -42,6 +51,7 @@ const UserProfile = () => {
             const email = decoded.sub; // email хранится в токене
             console.log(email);
             fetchUserData(email);
+            fetchBookingData(18);
         } catch (error) {
             console.error('Ошибка декодирования токена:', error);
         }
@@ -74,11 +84,49 @@ const UserProfile = () => {
         }
     };
 
-    const handleChange = (e) => {
-        setUserData({
-            ...userData,
-            [e.target.name]: e.target.value
-        });
+    const fetchBookingData = async (userId) => {
+        setIsLoading(true);
+        try {
+            const token = getToken();
+            const response = await fetch(`http://localhost:5246/api/Booking/GetBookingByUserId/${userId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}` // Добавление токена в заголовок
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Ошибка при загрузке броней пользователя");
+            }
+            const data = await response.json();
+            setBookingData(data); // Устанавливаем массив бронирований
+            const hotelIds = data.map(booking => booking.room.hotelId);
+            await fetchHotelsData(hotelIds);
+        } catch (error) {
+            console.error('Ошибка загрузки данных бронирований пользователя:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const fetchHotelsData = async (hotelIds) => {
+        try {
+            const requests = hotelIds.map(id =>
+                fetch(`http://localhost:5246/api/Hotel/GetHotelById/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`
+                    }
+                })
+            );
+            const responses = await Promise.all(requests);
+            const hotelsData = await Promise.all(responses.map(response => response.json()));
+            const hotelsObj = hotelsData.reduce((acc, hotel) => {
+                acc[hotel.id] = hotel;
+                return acc;
+            }, {});
+            setHotels(hotelsObj);
+        } catch (error) {
+            console.error('Ошибка загрузки данных об отелях:', error);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -219,6 +267,9 @@ const UserProfile = () => {
                         </button>
                     </form>
                 </div>
+
+
+
             ) : (
                 <div>
                     <h2>Информация о пользователе</h2>
@@ -228,12 +279,30 @@ const UserProfile = () => {
                     <p><strong>Номер телефона:</strong> {user.phoneNumber}</p>
                     <p><strong>Паспорт:</strong> {user.passport}</p>
 
+                    <h2>Информация о бронировании</h2>
+                    {isLoading ? (
+                        <p>Загрузка данных бронирования...</p>
+                    ) : (
+                        <div>
+                            {bookingData.length > 0 ? (
+                                bookingData.map(booking => (
+                                    <div key={booking.id}>
+                                        <p><strong>Дата заезда:</strong> {booking.checkIn}</p>
+                                        <p><strong>Дата выезда:</strong> {booking.checkOut}</p>
+                                        <p><strong>Номер комнаты:</strong> {booking.room.roomNumber}</p>
+                                        <p><strong>Цена:</strong> {booking.room.price}</p>
+                                        <p><strong>Название отеля:</strong> {hotels[booking.room.hotelId]?.name}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>Нет данных о бронировании.</p>
+                            )}
+                        </div>
+                    )}
+
                     <h2>Действия</h2>
                     <button onClick={() => setIsEditing(true)}>Редактировать</button>
                     <button onClick={logout}>Выйти</button>
-
-
-
                 </div>
             )}
         </div>
